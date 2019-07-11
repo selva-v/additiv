@@ -20,8 +20,8 @@ class SearchBox extends Component {
             className="form-control"
             placeholder={this.state.placeholder}
             value={this.state.value}
-						onChange={this.handleChange}
-						onKeyPress={this.onEnter}
+            onChange={this.handleChange}
+            onKeyPress={this.onEnter}
           />
           <div className="input-group-append">
             <button
@@ -53,14 +53,15 @@ class SearchBox extends Component {
   handleChange = event => {
     this.setState({ value: event.target.value });
     console.log(this.state.value);
-	};
-	
-	onEnter = event => {
-		const isEnterPressed = event.which === ENTER_KEY || event.keyCode === ENTER_KEY;
+  };
+
+  onEnter = event => {
+    const isEnterPressed =
+      event.which === ENTER_KEY || event.keyCode === ENTER_KEY;
     if (isEnterPressed) {
-			console.log("On Enter: " + event.target.value);
+      console.log("On Enter: " + event.target.value);
     }
-	}
+  };
 
   onSearchClick = () => {
     this.setState({ isLoading: !this.state.isLoading });

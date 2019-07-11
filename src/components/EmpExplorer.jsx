@@ -3,42 +3,43 @@ import "../styles/view.scss";
 import SearchBox from "./SearchBox";
 
 class EmpExplorer extends Component {
-	constructor(props) {
+  constructor(props) {
     super(props);
     this.state = {
-			placeholder: "John Hartman",
-			value: "",
-			btnText: "Search",
+      placeholder: "John Hartman",
+      value: "",
+      btnText: "Search",
       error: null,
-      isLoaded: false,
-      items: []
+      isLoading: false,
+      users: []
     };
-	}
-	
-	componentDidMount() {
+  }
+
+  fetchUsers() {
     fetch("http://api.additivasia.io/api/v1/assignment/employees/", {
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			mode: 'no-cors'
-		})
-			.then(res => res.json())
+      mode: "no-cors"
+    })
+      .then(res => res.json())
       .then(
-        (result) => {
+        result => {
           this.setState({
-            isLoaded: true,
-            items: result
+            users: result,
+            isLoading: false
           });
         },
-        (error) => {
+        error => {
           this.setState({
-            isLoaded: true,
+            isLoading: false,
             error
           });
         }
-      )
-	}
-	
+      );
+  }
+
+  componentDidMount() {
+    this.fetchUsers();
+  }
+
   render() {
     return (
       <div className="container">
@@ -63,9 +64,11 @@ class EmpExplorer extends Component {
         <div className="row">
           <div className="col-12">
             <ul className="list-unstyled">
-							{/* {items.map(item => (
-								<li className="emp-search" key={item}>{item}</li>
-							))} */}
+              {this.state.users.map(user => (
+                <li className="emp-search" key={user.name}>
+                  {user.name}
+                </li>
+              ))}
             </ul>
           </div>
         </div>
