@@ -1,6 +1,9 @@
 //Import Bootstrap
 @import "~bootstrap/scss/bootstrap.scss";
 
+body {
+  font-size: 15px;
+}
 .logo {
   margin: 20px 0;
 }
@@ -52,14 +55,13 @@
     }
   }
 }
-
+h6 {
+  font-size: 17px;
+}
 .emp-name {
   padding: 0 0 5px;
 }
 
-.chevron {
-  background: url(../images/icons/chevron_right.svg) 0 0 no-repeat;
-  width: 24px;
-  height: 24px;
-  border: none;
+ul {
+  margin-bottom: 25px;
 }

@@ -1,18 +1,15 @@
 import React, { Component } from "react";
 import "../styles/view.scss";
 
-const ENTER_KEY = 13;
-
 class EmpExplorer extends Component {
   constructor(props) {
     super(props);
     this.state = {
       placeholder: "John Hartman",
       btnText: "Search",
-      query: "",
+      value: "",
       error: null,
       isLoading: false,
-      employeeData: [],
       directRepotee: [],
       searchHistory: localStorage.getItem("searchHistory") ? JSON.parse(localStorage.getItem("searchHistory")) : [],
       noEmpData: ""
@@ -20,7 +17,6 @@ class EmpExplorer extends Component {
     this.handleSearch = this.handleSearch.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleResponse = this.handleResponse.bind(this);
-    this.getRepotee = this.getRepotee.bind(this);
   }
 
   renderButtonText() {
@@ -30,40 +26,27 @@ class EmpExplorer extends Component {
   }
 
   handleSearch() {
-    console.log("handleSearch: " + this.state.query);
-    let name = this.state.query;
+    this.setState({ directRepotee: [] });
+    let name = this.state.value;
     let searchHistory = localStorage.getItem("searchHistory") ? JSON.parse(localStorage.getItem("searchHistory")) : [];
     if (searchHistory.indexOf(name) === -1) {
       searchHistory.push(name);
       localStorage.setItem("searchHistory", JSON.stringify(searchHistory));
     }
     this.setState({ searchHistory: searchHistory });
-    console.log("Search history: " + this.state.searchHistory);
-    this.fetchUsers(this.state.query);
-  }
-
-  getRepotee(event) {
-    this.fetchUsers(event.target.value);
+    this.fetchUsers(this.state.value);
   }
 
   handleChange(event) {
-    this.setState({ query: event.target.value });
-    console.log(event.target.value);
+    this.setState({ value: event.target.value });
   }
-
-  onEnter = event => {
-    const isEnterPressed = event.which === ENTER_KEY || event.keyCode === ENTER_KEY;
-    if (isEnterPressed) {
-      console.log("On Enter: " + event.target.value);
-    }
-  };
 
   handleResponse(employeeData) {
     if (employeeData) {
-      debugger;
       employeeData.forEach(empName => {
         if (this.state.directRepotee.indexOf(empName) === -1) {
-          this.setState({ directRepotee: this.state.directRepotee.concat(empName) });
+          this.setState({ directRepotee: [...this.state.directRepotee, empName] });
+          this.fetchUsers(empName);
         }
       });
     } else {
@@ -81,7 +64,7 @@ class EmpExplorer extends Component {
             this.handleResponse(employeeData);
           } else {
             this.setState({
-              noEmpData: "There is no repotee found",
+              noEmpData: "No subordinates found",
               isLoading: false
             });
           }
@@ -93,7 +76,6 @@ class EmpExplorer extends Component {
           });
         }
       );
-    console.log("Repotee: " + employeeData);
   }
 
   render() {
@@ -111,10 +93,10 @@ class EmpExplorer extends Component {
               <div className="input-group mb-3 search-box">
                 <input
                   type="search"
+                  value={this.state.value}
                   className="form-control"
                   placeholder={this.state.placeholder}
                   onChange={this.handleChange}
-                  onKeyPress={this.onEnter}
                 />
                 <div className="input-group-append">
                   <button className="btn btn-outline-primary" type="button" id="search" onClick={this.handleSearch}>
@@ -127,27 +109,39 @@ class EmpExplorer extends Component {
         </div>
 
         <div className="row">
+          {this.state.directRepotee.length ? (
+            <h6 className="col-12 text-info">Subordinates of employee {this.state.value}</h6>
+          ) : (
+            <div />
+          )}
           <div className="col-12">
             <ul className="list-unstyled">
-              {this.state.directRepotee.map(repotee => (
-                <li className="emp-name clearfix" key={repotee}>
-                  <button className="chevron float-left" type="button" value={repotee} onClick={this.getRepotee} />
-                  <span className="float-left">{repotee}</span>
-                </li>
-              ))}
+              {this.state.directRepotee.length ? (
+                this.state.directRepotee.map(repotee => (
+                  <li className="emp-name" key={repotee}>
+                    {repotee}
+                  </li>
+                ))
+              ) : (
+                <li className="text-black-50">No subordinates found </li>
+              )}
             </ul>
           </div>
         </div>
 
         <div className="row">
-          <h6 className="col-12 text-secondary">History of search:</h6>
+          <h6 className="col-12 text-info">History of search:</h6>
           <div className="col-12">
             <ul className="list-unstyled">
-              {this.state.searchHistory.map(history => (
-                <li className="emp-search text-black-50" key={history}>
-                  {history}
-                </li>
-              ))}
+              {this.state.searchHistory.length ? (
+                this.state.searchHistory.map(history => (
+                  <li className="emp-search text-black-50" key={history}>
+                    {history}
+                  </li>
+                ))
+              ) : (
+                <li className="emp-search text-black-50">No search history </li>
+              )}
             </ul>
           </div>
         </div>
