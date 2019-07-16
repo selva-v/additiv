@@ -11,18 +11,24 @@ class EmpExplorer extends Component {
       error: null,
       isLoading: false,
       directRepotee: [],
+      nonDirectRepotee: [],
       searchHistory: localStorage.getItem("searchHistory") ? JSON.parse(localStorage.getItem("searchHistory")) : [],
       noEmpData: ""
     };
     this.handleSearch = this.handleSearch.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleResponse = this.handleResponse.bind(this);
+    this.getRepotee = this.getRepotee.bind(this);
   }
 
   renderButtonText() {
     if (this.state.isLoading)
       return <span className="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true" />;
     return this.state.btnText;
+  }
+
+  handleChange(event) {
+    this.setState({ value: event.target.value });
   }
 
   handleSearch() {
@@ -33,20 +39,28 @@ class EmpExplorer extends Component {
       searchHistory.push(name);
       localStorage.setItem("searchHistory", JSON.stringify(searchHistory));
     }
-    this.setState({ searchHistory: searchHistory });
-    this.fetchUsers(this.state.value);
+    this.setState({
+      directRepotee: [],
+      nonDirectRepotee: [],
+      searchHistory: searchHistory
+    });
+    this.fetchUsers(this.state.value, 0);
   }
 
-  handleChange(event) {
-    this.setState({ value: event.target.value });
+  getRepotee(event) {
+    this.setState({ nonDirectRepotee: [] });
+    this.fetchUsers(event.target.value, "nonDirect");
   }
 
-  handleResponse(employeeData) {
+  handleResponse(employeeData, empType) {
     if (employeeData) {
-      employeeData.forEach(empName => {
-        if (this.state.directRepotee.indexOf(empName) === -1) {
-          this.setState({ directRepotee: [...this.state.directRepotee, empName] });
-          this.fetchUsers(empName);
+      employeeData.forEach(employee => {
+        if (this.state.directRepotee.indexOf(employee) === -1) {
+          if (!empType) {
+            this.setState({ directRepotee: [...this.state.directRepotee, employee] });
+          } else {
+            this.setState({ nonDirectRepotee: [...this.state.nonDirectRepotee, employee] });
+          }
         }
       });
     } else {
@@ -54,14 +68,14 @@ class EmpExplorer extends Component {
     }
   }
 
-  fetchUsers(empName) {
+  fetchUsers(empName, empType) {
     fetch("http://api.additivasia.io/api/v1/assignment/employees/" + empName)
       .then(res => res.json())
       .then(
         result => {
           let employeeData = result[1] ? result[1]["direct-subordinates"] : "";
           if (employeeData && employeeData.length > 0) {
-            this.handleResponse(employeeData);
+            this.handleResponse(employeeData, empType);
           } else {
             this.setState({
               noEmpData: "No subordinates found",
@@ -119,13 +133,34 @@ class EmpExplorer extends Component {
               {this.state.directRepotee.length ? (
                 this.state.directRepotee.map(repotee => (
                   <li className="emp-name" key={repotee}>
-                    {repotee}
+                    <button className="chevron text-primary" type="button" value={repotee} onClick={this.getRepotee}>
+                      {repotee}
+                    </button>
                   </li>
                 ))
               ) : (
                 <li className="text-black-50">No subordinates found </li>
               )}
             </ul>
+
+            <div className="col-12">
+              {this.state.nonDirectRepotee.length ? (
+                <h6 className="text-info">Non direct subordinates of employee</h6>
+              ) : (
+                <div />
+              )}
+              {this.state.directRepotee.length ? (
+                <ul className="list-unstyled">
+                  {this.state.nonDirectRepotee.length ? (
+                    this.state.nonDirectRepotee.map(item => <li key={item}>{item}</li>)
+                  ) : (
+                    <li> </li>
+                  )}
+                </ul>
+              ) : (
+                <div />
+              )}
+            </div>
           </div>
         </div>
 
